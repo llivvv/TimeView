@@ -1,6 +1,10 @@
 const durElem = document.querySelector(".ytp-time-duration");
-
 const ogDur = durElem.innerHTML;
+
+const durList = [];
+let ogDurInSec = 0;
+let isDurAdded = false;
+
 function getAllClasses() {
   // get all the tags
   const allTagsArray = [...document.getElementsByTagName("*")];
@@ -19,67 +23,62 @@ function getAllClasses() {
 
 // getAllClasses();
 
+function convertOgDurToSec() {
+  let ogDurArr = ogDur.split(":");
+  let min = parseInt(ogDurArr[0]);
+  let sec = parseInt(ogDurArr[1]);
+  ogDurInSec = min * 60 + sec;
+}
+
+function calcDur(speed) {
+  let speedText = speed.innerText;
+  if (speedText === "Normal") {
+    let ogDurArr = ogDur.split(":");
+    let minute = parseInt(ogDurArr[0]);
+    let seconds = parseInt(ogDurArr[1]);
+    return { minute, seconds };
+  } else {
+    let speedNum = parseFloat(speedText);
+    let calc = ogDurInSec / speedNum;
+    let minute = Math.floor(calc / 60);
+    let seconds = Math.round(((calc % 60) * 100) / 100);
+    return { minute, seconds };
+  }
+}
+
+function displayDur(minSecObj, speed) {
+  let newSpan = document.createElement("div");
+  newSpan.classList.add("ytp-menuitem-label");
+  speed.appendChild(newSpan);
+  let paddedSec = String(minSecObj.seconds).padStart(2, "0");
+  newSpan.innerText = `${minSecObj.minute}:${paddedSec}`;
+  durList.push(`${minSecObj.minute}:${paddedSec}`);
+}
+
 function handleSpeedItemClick() {
+  if (isDurAdded) return;
+
   // wait for the speeds panel to show up first
   setTimeout(() => {
     getAllClasses();
     const speedsWithCustom = document.querySelectorAll(".ytp-menuitem");
     console.log(speedsWithCustom);
     const speeds = Array.from(speedsWithCustom).slice(1);
+    convertOgDurToSec();
 
     speeds.forEach((speed) => {
-      // make sure the duration was not already added
-      if (speed.children.length < 2) {
-        let newSpan = document.createElement("div");
-        newSpan.innerText = "0:21";
-        newSpan.classList.add("ytp-menuitem-label");
-        speed.appendChild(newSpan);
-        console.log(speed.innerHTML);
-      }
-      // speed.classList.add("is-speed");
+      const minSecObj = calcDur(speed);
+      displayDur(minSecObj, speed);
     });
-  }, 1000);
+  }, 500);
 
-  // const onlySpeeds = document.querySelectorAll(".is-speed");
-  // onlySpeeds.forEach((speed) => {
-  //   let newSpan = document.createElement("div");
-  //   newSpan.innerText = "0:21";
-  //   newSpan.classList.add("ytp-menuitem-label");
-  //   speed.appendChild(newSpan);
-  //   console.log(speed.innerHTML);
-  // });
+  isDurAdded = true;
 }
 
 function getMenuItems() {
   const child = document.querySelector(".ytp-panel-menu").children[5];
-  if (child != null) {
-    child.addEventListener("click", handleSpeedItemClick, { once: true });
-  }
-  // alert(child.innerHTML);
+  child.addEventListener("click", handleSpeedItemClick);
 }
-
-chrome.runtime.sendMessage({ action: "triggerPopup" });
 
 const settingsBtn = document.querySelector(".ytp-settings-button");
-
-// while (document.querySelector(".ad-showing") != null) {
-//   // dont run the event listener until finished watching ad
-// }
 settingsBtn.addEventListener("click", getMenuItems);
-
-// const parent = document.querySelector(".ytp-panel-menu").children[0];
-// alert(parent);
-
-// send the original duration to popup.js
-chrome.runtime.sendMessage(
-  {
-    message: ogDur,
-  },
-  (response) => {
-    console.log(response.message);
-  }
-);
-
-if (durElem) {
-  durElem.innerHTML = "0:07";
-}
