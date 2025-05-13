@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Video Speed/Duration Extension",
+  "version": "1.0",
+  "description": "See the actual duration of video after changing speed",
+  "content_scripts": [
+    {
+      "js": ["scripts/content.js"],
+      "matches": ["https://*.youtube.com/watch?v=*"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

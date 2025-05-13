@@ -1,0 +1,26 @@
+html,
+body {
+  margin: 0;
+}
+
+body {
+  font-family: "Helvetica", Sans-serif;
+  background-color: black;
+  padding: none;
+}
+
+.container {
+  padding: 10px;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  wrap: no-wrap;
+}
+
+h1 {
+  color: white;
+}
+
+ul {
+  color: white;
+}
