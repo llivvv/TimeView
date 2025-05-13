@@ -1,8 +1,9 @@
 let ogDuration;
 let ogDurInSec;
+const durations = [];
 
 const durList = document.querySelector(".dur-list");
-const speedList = document.querySelectorAll(".speed-elem");
+const speedListElems = document.querySelectorAll(".speed-elem");
 
 // getting the duration of the original video
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -25,6 +26,7 @@ function makeDurationList() {
   console.log(ogSec);
   calcDur(ogMin, ogSec);
   calcNewDur();
+  addToDuration();
 
   console.log("yay");
 }
@@ -36,5 +38,24 @@ function calcDur(ogMin, ogSec) {
 }
 
 function calcNewDur() {
-  // speedList.forEach((speed) => {});
+  speedListElems.forEach((speed) => {
+    let speedNum = parseFloat(speed.innerHTML);
+    console.log(speedNum);
+    let calc = ogDurInSec / speedNum;
+    console.log(calc);
+    let minute = Math.floor(calc / 60);
+    let seconds = Math.round(((calc % 60) * 100) / 100);
+    durations.push({ minute, seconds });
+    console.log(durations);
+  });
+}
+
+// creating the html elements
+function addToDuration() {
+  durations.forEach((dur) => {
+    let newLi = document.createElement("li");
+    dur.seconds = String(dur.seconds).padStart(2, "0");
+    newLi.innerText = `${dur.minute}:${dur.seconds}`;
+    durList.appendChild(newLi);
+  });
 }
