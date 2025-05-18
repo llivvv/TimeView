@@ -3,10 +3,14 @@
   "name": "YouTube Video Speed/Duration Extension",
   "version": "1.0",
   "description": "See the actual duration of video after changing speed",
+  "permissions": ["activeTab", "tabs"],
   "content_scripts": [
     {
       "js": ["scripts/content.js"],
       "matches": ["https://*.youtube.com/watch?v=*"]
     }
-  ]
+  ],
+  "background": {
+    "service_worker": "scripts/background.js"
+  }
 }

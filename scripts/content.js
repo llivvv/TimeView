@@ -1,12 +1,21 @@
-let isDurAdded = false;
-let ogDur = 0;
+// need to reinitialize for new videos
+let settingsBtn = null;
+let durDict = null;
+
+// listen for new video
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  console.log("got msg from background lol");
+  settingsBtn = document.querySelector(".ytp-settings-button");
+  durDict = new Map();
+});
+let ogDur;
 let speedsWithCustom = null;
 let speedSlider = null;
 let speeds = null;
 
-console.log(ogDur);
-
-const durList = [];
+// if (durDict == null) {
+//   durDict = new Map();
+// }
 
 function calcDur(speed) {
   let speedText = speed.innerText;
@@ -19,29 +28,48 @@ function calcDur(speed) {
   calc %= 3600;
   let minutes = Math.floor(calc / 60);
   let seconds = Math.floor(calc % 60);
-  return { hours, minutes, seconds };
+  return { hours, minutes, seconds, speedNum };
 }
 
-function displayDur(hoursMinSecObj, speed) {
+function setDurMap(hoursMinSecObj) {
   let paddedMin = String(hoursMinSecObj.minutes).padStart(2, "0");
   let paddedSec = String(hoursMinSecObj.seconds).padStart(2, "0");
+  let durStr;
 
-  speed.children[0].innerText +=
-    hoursMinSecObj.hours == 0
-      ? ` (${hoursMinSecObj.minutes}:${paddedSec})`
-      : ` (${hoursMinSecObj.hours}:${paddedMin}:${paddedSec})`;
+  hoursMinSecObj.hours == 0
+    ? (durStr = ` (${hoursMinSecObj.minutes}:${paddedSec})`)
+    : (durStr = ` (${hoursMinSecObj.hours}:${paddedMin}:${paddedSec})`);
+
+  durDict.set(hoursMinSecObj.speedNum, durStr);
+}
+
+function renderDur(speed) {
+  let speedText = speed.innerText;
+  if (speedText === "Normal") {
+    speedText = "1";
+  }
+  let speedNum = parseFloat(speedText);
+  let newDur = durDict.get(speedNum);
+  speed.children[0].innerText += newDur;
   speed.classList.add("new-duration");
-  durList.push(hoursMinSecObj);
-  console.log(durList);
 }
 
 function calcAndDisplayDur(speeds) {
-  if (document.querySelector(".new-duration") != null) return;
+  if (speeds[1].classList.contains("new-duration")) return;
 
-  speeds.forEach((speed) => {
-    const hoursMinSecObj = calcDur(speed);
-    displayDur(hoursMinSecObj, speed);
-  });
+  // if (document.querySelector(".new-duration") != null) return;
+
+  if (durDict.size != 0) {
+    speeds.forEach((speed) => renderDur(speed));
+    console.log("did not recalculate!");
+  } else {
+    speeds.forEach((speed) => {
+      const hoursMinSecObj = calcDur(speed);
+      setDurMap(hoursMinSecObj, speed);
+      renderDur(speed);
+      console.log("did a calculation");
+    });
+  }
 }
 
 function selectSpeedElems() {
@@ -91,5 +119,8 @@ function getMenuItems() {
   }
 }
 
-const settingsBtn = document.querySelector(".ytp-settings-button");
+// if (settingsBtn == null) {
+//   settingsBtn = document.querySelector(".ytp-settings-button");
+// }
+// settingsBtn = document.querySelector(".ytp-settings-button");
 settingsBtn.addEventListener("click", getMenuItems);
