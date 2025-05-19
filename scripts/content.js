@@ -1,21 +1,34 @@
-// need to reinitialize for new videos
-// let settingsBtn = null;
-// let durDict = null;
+// initialize duration and speed elements
+let ogDur = 0;
+let speedsWithCustom = null;
+let speedSlider = null;
+let speeds = null;
 
+// stores calculated durations
+let durDict = new Map();
+
+// main
 function runContentScript() {
-  let ogDur = 0;
-  let speedsWithCustom = null;
-  let speedSlider = null;
-  let speeds = null;
+  console.log("reran the beginning of extension");
+  // initialize duration and speed elements
+  // let ogDur = 0;
+  // let speedsWithCustom = null;
+  // let speedSlider = null;
+  // let speeds = null;
 
-  let durDict = new Map();
+  // // stores calculated durations
+  // let durDict = new Map();
 
-  function calcDur(speed) {
+  function parseSpeedText(speed) {
     let speedText = speed.innerText;
     if (speedText === "Normal") {
       speedText = "1";
     }
     let speedNum = parseFloat(speedText);
+    return speedNum;
+  }
+
+  function calcDur(speedNum) {
     let calc = ogDur / speedNum;
     let hours = Math.floor(calc / 3600);
     calc %= 3600;
@@ -25,6 +38,7 @@ function runContentScript() {
   }
 
   function setDurMap(hoursMinSecObj) {
+    if (durDict.has(hoursMinSecObj.speedNum)) return;
     let paddedMin = String(hoursMinSecObj.minutes).padStart(2, "0");
     let paddedSec = String(hoursMinSecObj.seconds).padStart(2, "0");
     let durStr;
@@ -37,11 +51,7 @@ function runContentScript() {
   }
 
   function renderDur(speed) {
-    let speedText = speed.innerText;
-    if (speedText === "Normal") {
-      speedText = "1";
-    }
-    let speedNum = parseFloat(speedText);
+    let speedNum = parseSpeedText(speed);
     let newDur = durDict.get(speedNum);
     speed.children[0].innerText += newDur;
     speed.classList.add("new-duration");
@@ -50,19 +60,27 @@ function runContentScript() {
   function calcAndDisplayDur(speeds) {
     if (speeds[1].classList.contains("new-duration")) return;
 
-    // if (document.querySelector(".new-duration") != null) return;
-
-    if (durDict.size != 0) {
-      speeds.forEach((speed) => renderDur(speed));
-      console.log("did not recalculate!");
-    } else {
-      speeds.forEach((speed) => {
-        const hoursMinSecObj = calcDur(speed);
+    speeds.forEach((speed) => {
+      const speedNum = parseSpeedText(speed);
+      if (!durDict.has(speedNum)) {
+        const hoursMinSecObj = calcDur(speedNum);
         setDurMap(hoursMinSecObj, speed);
-        renderDur(speed);
-        console.log("did a calculation");
-      });
-    }
+      }
+      renderDur(speed);
+    });
+
+    // if (durDict.size != 0) {
+    //   speeds.forEach((speed) => renderDur(speed));
+    //   console.log("did not recalculate!");
+    // } else {
+    //   speeds.forEach((speed) => {
+    //     const speedNum = parseSpeedText(speed);
+    //     const hoursMinSecObj = calcDur(speedNum);
+    //     setDurMap(hoursMinSecObj, speed);
+    //     renderDur(speed);
+    //     console.log("did a calculation");
+    //   });
+    // }
   }
 
   function selectSpeedElems() {
@@ -93,6 +111,7 @@ function runContentScript() {
     for (let i = 0; i < allChildren.length; i++) {
       if (allChildren[i].children[1].innerText == "Playback speed") {
         ogDur = document.querySelector("video").duration;
+        console.log(ogDur);
         return allChildren[i];
       }
     }
@@ -112,6 +131,14 @@ function runContentScript() {
     }
   }
 
+  function showTimeRemaining() {
+    if (document.querySelector("video").playBackRate != 1) {
+      let rate = document.querySelector("video").playBackRate;
+      if (!durDict.has(rate)) {
+      }
+    }
+  }
+
   let settingsBtn = document.querySelector(".ytp-settings-button");
   settingsBtn.addEventListener("click", getMenuItems);
 }
@@ -121,9 +148,15 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   console.log("got msg from background lol");
 
   if (window.location.href.includes("watch?v=")) {
+    // initialize duration and speed elements
+    ogDur = 0;
+    speedsWithCustom = null;
+    speedSlider = null;
+    speeds = null;
+
+    // stores calculated durations
+    durDict = new Map();
+
     runContentScript();
   }
-  // console.log(window.location.href);
-  // settingsBtn = document.querySelector(".ytp-settings-button");
-  // durDict = new Map();
 });
