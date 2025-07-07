@@ -64,7 +64,6 @@ function runContentScript() {
     speedsWithCustom = document.querySelectorAll(".ytp-menuitem");
     speedSlider = document.querySelector(".ytp-speedslider");
     speeds = Array.from(speedsWithCustom).slice(1);
-    console.log(speeds);
   }
 
   function handleSpeedItemClick() {
@@ -88,7 +87,6 @@ function runContentScript() {
     for (let i = 0; i < allChildren.length; i++) {
       if (allChildren[i].children[1].innerText == "Playback speed") {
         ogDur = document.querySelector("video").duration;
-        console.log(ogDur);
         return allChildren[i];
       }
     }
@@ -96,23 +94,13 @@ function runContentScript() {
   }
 
   function getMenuItems() {
-    console.log("reached settings btn");
     const allChildren = document.querySelector(".ytp-panel-menu").children;
-    console.log(allChildren.length);
     // let child = null;
 
     let child = findSpeedItem(allChildren);
 
     if (child != null) {
       child.addEventListener("click", handleSpeedItemClick);
-    }
-  }
-
-  function showTimeRemaining() {
-    if (document.querySelector("video").playBackRate != 1) {
-      let rate = document.querySelector("video").playBackRate;
-      if (!durDict.has(rate)) {
-      }
     }
   }
 
