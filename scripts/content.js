@@ -9,16 +9,6 @@ let durDict = new Map();
 
 // main
 function runContentScript() {
-  console.log("reran the beginning of extension");
-  // initialize duration and speed elements
-  // let ogDur = 0;
-  // let speedsWithCustom = null;
-  // let speedSlider = null;
-  // let speeds = null;
-
-  // // stores calculated durations
-  // let durDict = new Map();
-
   function parseSpeedText(speed) {
     let speedText = speed.innerText;
     if (speedText === "Normal") {
@@ -68,19 +58,6 @@ function runContentScript() {
       }
       renderDur(speed);
     });
-
-    // if (durDict.size != 0) {
-    //   speeds.forEach((speed) => renderDur(speed));
-    //   console.log("did not recalculate!");
-    // } else {
-    //   speeds.forEach((speed) => {
-    //     const speedNum = parseSpeedText(speed);
-    //     const hoursMinSecObj = calcDur(speedNum);
-    //     setDurMap(hoursMinSecObj, speed);
-    //     renderDur(speed);
-    //     console.log("did a calculation");
-    //   });
-    // }
   }
 
   function selectSpeedElems() {
@@ -145,8 +122,6 @@ function runContentScript() {
 
 // listen for new video
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  console.log("got msg from background lol");
-
   if (window.location.href.includes("watch?v=")) {
     // initialize duration and speed elements
     ogDur = 0;
